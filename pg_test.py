@@ -11,7 +11,8 @@ def main():
 
     populate_table(1000, 500, 5)
 
-    return_mean()
+    get_mean()
+    get_stddev()
 
     conn.commit()
     cur.close()
@@ -38,10 +39,15 @@ def clear_table():
     conn.commit()
 
 
-def return_mean():
+def get_mean():
     cur.execute("SELECT AVG(num) FROM narvar")
     print cur.fetchone()[0]
 
+
+def get_stddev():
+    cur.execute("SELECT STDDEV(num) FROM narvar")
+    print cur.fetchone()[0]
+    
 
 if __name__ == '__main__':
     main()
