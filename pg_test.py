@@ -7,35 +7,44 @@ cur = conn.cursor()
 
 def main():
 
-    cur.execute('DROP TABLE IF EXISTS narvar')
+    clear_table()
 
-    cur.execute('CREATE TABLE narvar (id serial PRIMARY KEY, num integer);')
+    cur.execute("SELECT count(*) FROM narvar;")
+    print cur.fetchone()[0]
 
-    # cur.execute("INSERT INTO test (num, data) VALUES (%s, %s)", (100, "abc`def"))
+    populate_table(1000, 500, 5)
+        
+    cur.execute("SELECT count(*) FROM narvar;")
+    print cur.fetchone()[0]
 
-    cur.execute("SELECT * FROM test;")
+    clear_table()
 
-    print cur.fetchone()
+    cur.execute("SELECT count(*) FROM narvar;")
+    print cur.fetchone()[0]
 
-    data_to_insert = populate_table(1000, 500, 5)
-    
-    # not really a csv
-    # internet suggested copy best way to efficiently load db
-    
-    with open("rand_num_dist.csv", "wb") as ofile:
-        ofile.writelines(["%s\n" % num for num in data_to_insert])
-    
-    with open("rand_num_dist.csv", "r") as ifile:
-        cur.copy_from(ifile, 'narvar', columns=("num",) )
-    
     conn.commit()
     cur.close()
     conn.close()
 
 
 def populate_table(n, mu, sigma):
-    return [random.gauss(mu, sigma) for _ in xrange(n)]
+    data_to_insert = [random.gauss(mu, sigma) for _ in xrange(n)]
+    
 
+    # not really a csv
+    with open("rand_num_dist.csv", "wb") as ofile:
+        ofile.writelines(["%s,%s,\n" % num for num in enumerate(data_to_insert)])
+    # internet suggested copy best way to efficiently load db
+    with open("rand_num_dist.csv", "r") as ifile:
+        cur.copy_from(ifile, 'narvar', sep=",", columns=("id", "num") )
+
+    conn.commit()
+
+def clear_table():
+    cur.execute('DROP TABLE IF EXISTS narvar')
+    cur.execute('CREATE TABLE narvar (id serial PRIMARY KEY, num decimal);')
+
+    conn.commit()
 
 
 if __name__ == '__main__':
