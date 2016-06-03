@@ -13,6 +13,7 @@ def main():
 
     get_mean()
     get_stddev()
+    get_mean_stddev()
 
     conn.commit()
     cur.close()
@@ -47,7 +48,12 @@ def get_mean():
 def get_stddev():
     cur.execute("SELECT STDDEV(num) FROM narvar")
     print cur.fetchone()[0]
-    
+
+def get_mean_stddev():
+    # one call for mean and stddev vs reusing above code
+    cur.execute("SELECT AVG(num), STDDEV(num) FROM narvar")
+    result = cur.fetchone()
+    print result[0], result[1]
 
 if __name__ == '__main__':
     main()
