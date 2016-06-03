@@ -15,7 +15,7 @@ def main():
     get_stddev()
     get_mean_stddev()
     get_ntile(10, 9)
-    get_ntile(100, 90)
+    get_ntile_array(10)
 
     conn.commit()
     cur.close()
@@ -59,10 +59,17 @@ def get_mean_stddev():
     print result[0], result[1]
 
 
-def get_ntile(num_buckets, bucket_num):
-    # this seems like you could just sort and then take the num in row (number of rows in table  )
-    cur.execute("SELECT MAX(num) FROM (SELECT num, ntile(%s) OVER (ORDER BY num) AS ntile FROM narvar) AS x WHERE ntile = %s GROUP BY ntile" % (num_buckets, bucket_num))
+def get_ntile(number_of_buckets, bucket_number):
+    # this seems like you could just sort the table and then take the num in row (number of rows in table * bucket_number / number_of_buckets)
+    cur.execute("SELECT MAX(num), ntile FROM (SELECT num, ntile(%s) OVER (ORDER BY num) AS ntile FROM narvar) AS x WHERE ntile = %s GROUP BY ntile" % (number_of_buckets, bucket_number))
     print cur.fetchall()
+
+
+def get_ntile_array(number_of_buckets):
+    cur.execute("SELECT MAX(num), ntile FROM (SELECT num, ntile(%s) OVER (ORDER BY num) AS ntile FROM narvar) AS x GROUP BY ntile ORDER BY ntile" % (number_of_buckets))
+    print cur.fetchall()
+
+
 
 if __name__ == '__main__':
     main()
