@@ -9,11 +9,13 @@ def main():
 
     clear_table()
 
-    populate_table(1000, 500, 5)
+    populate_table(100, 50, 5)
 
     get_mean()
     get_stddev()
     get_mean_stddev()
+    get_ntile(10, 9)
+    get_ntile(100, 90)
 
     conn.commit()
     cur.close()
@@ -49,11 +51,18 @@ def get_stddev():
     cur.execute("SELECT STDDEV(num) FROM narvar")
     print cur.fetchone()[0]
 
+
 def get_mean_stddev():
     # one call for mean and stddev vs reusing above code
     cur.execute("SELECT AVG(num), STDDEV(num) FROM narvar")
     result = cur.fetchone()
     print result[0], result[1]
+
+
+def get_ntile(num_buckets, bucket_num):
+    # this seems like you could just sort and then take the num in row (number of rows in table  )
+    cur.execute("SELECT MAX(num) FROM (SELECT num, ntile(%s) OVER (ORDER BY num) AS ntile FROM narvar) AS x WHERE ntile = %s GROUP BY ntile" % (num_buckets, bucket_num))
+    print cur.fetchall()
 
 if __name__ == '__main__':
     main()
